@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     # Parsing arguments and setting hyper-parameters
     parser = argparse.ArgumentParser(description='train', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--dataset', default='mnist', choices=['mnist', 'fmnist', 'usps', 'reuters10k'])
+    parser.add_argument('--dataset', default='iris', choices=['mnist', 'fmnist', 'usps', 'reuters10k','iris','wine','synthetic','TSRN'])
     parser.add_argument('--model', default='desom', choices=['desom', 'convdesom', 'som'])
     parser.add_argument('--validation', default=True, type=bool, help='use train/validation split')
     parser.add_argument('--ae_weights', default=None, help='pre-trained autoencoder weights')
@@ -121,3 +121,6 @@ if __name__ == "__main__":
                 ax[k][l].axis('off')
         plt.subplots_adjust(hspace=0.05, wspace=0.05)
         plt.savefig(os.path.join(args.save_dir, 'map_{}.png'.format(args.dataset)), bbox_inches='tight')
+    print(model.prototypes)
+    print(type(model.prototypes))
+    print(model.prototypes.shape)

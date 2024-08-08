@@ -294,7 +294,8 @@ class Kerasom:
                     'y_val_true': y_val_batch,
                     'y_val_pred': y_val_pred if X_val is not None else None,
                 }
-
+                print('teste:')
+                print(val_loss)
                 perflogger.log(batch_summary, verbose=verbose)
 
             # Save intermediate model

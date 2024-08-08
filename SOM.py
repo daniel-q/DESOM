@@ -7,7 +7,7 @@ SOM layer
 """
 
 import tensorflow as tf
-from tensorflow.keras.layers import Layer, InputSpec
+from keras.layers import Layer, InputSpec
 
 
 class SOMLayer(Layer):

@@ -6,7 +6,14 @@ Dataset loading functions
 """
 
 import numpy as np
-
+from sklearn.datasets import load_iris
+from sklearn.datasets import load_wine
+from sklearn.model_selection import train_test_split
+import os
+import zipfile
+from urllib.request import urlopen
+import shutil
+import pandas as pd
 
 def load_mnist(flatten=True, validation=False):
     from keras.datasets import mnist
@@ -48,7 +55,7 @@ def load_fashion_mnist(flatten=True, validation=False):
         return (x, y), (None, None)
 
 
-def load_usps(data_path='./data/usps', validation=False):
+def load_usps(data_path='./DESOM/data/usps', validation=False):
     import h5py
     with h5py.File(data_path+'/usps.h5', 'r') as hf:
         train = hf.get('train')
@@ -85,6 +92,28 @@ def load_reuters(data_path='./data/reuters', validation=False):
         return (x_train, y_train), (x_test, y_test)
     else:
         return (x, y), (None, None)
+
+def load_iris_data(validation):
+    data = load_iris()
+    X = data.data
+    y = data.target
+    if validation:
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+        return (X_train, y_train), (X_test, y_test)
+    else:
+        return (X, y), (None, None)
+
+def load_wine_data(validation):
+    data = load_wine()
+    X = data.data
+    y = data.target
+    if validation:
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+        return (X_train, y_train), (X_test, y_test)
+    else:
+        return (X, y), (None, None)
+        
+
 
 
 def make_reuters_data(data_dir):
@@ -164,6 +193,47 @@ def make_reuters_data(data_dir):
     x = x.reshape((x.shape[0], -1))
     np.save(join(data_dir, 'reutersidf10k.npy'), {'data': x, 'label': y})
 
+def load_synthetic(validation):
+    url = 'http://archive.ics.uci.edu/static/public/139/synthetic+control+chart+time+series.zip'
+    file_name = 'synthetic+control+chart+time+series.zip'
+
+    with urlopen(url) as response, open(file_name, 'wb') as out_file:
+        shutil.copyfileobj(response, out_file)
+
+        # Extrai o arquivo necessario do zip
+        with zipfile.ZipFile(file_name) as zf:
+            zf.extract('synthetic_control.data')
+
+    # deleta o zip do diretorio
+    os.remove('synthetic+control+chart+time+series.zip')
+
+    # loading data from the file
+    X = np.array(pd.read_csv("synthetic_control.data",header=None, delim_whitespace=True))
+
+
+    y = np.zeros(100)
+    for i in range (1,6):
+        y=np.append(y,i*np.ones(100))
+    if validation:
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+        return (X_train, y_train), (X_test, y_test)
+    else:
+        return (X, y), (None, None)
+    
+def load_TSRN(validation):
+    import h5py
+    
+    with h5py.File('./DESOM/data/TSRN/TJRN.h5', 'r') as hf:
+        
+        X = hf.get('data_train')[:]
+        y = hf.get('target_train')[:]
+    if validation:  # Return train and test set
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+        return (X_train, y_train), (X_test, y_test)
+    else:  # Return only train set with all images
+
+        return (X, y), (None, None)
+
 
 def load_data(dataset_name, flatten=True, validation=False):
     if dataset_name == 'mnist':
@@ -172,8 +242,16 @@ def load_data(dataset_name, flatten=True, validation=False):
         return load_fashion_mnist(flatten=flatten, validation=validation)
     elif dataset_name == 'usps':
         return load_usps(validation=validation)
+    elif dataset_name == 'iris':
+        return load_iris_data(validation)
+    elif dataset_name == 'wine':
+        return load_iris_data(validation)
     elif dataset_name == 'reuters10k' or dataset_name == 'reuters':
         return load_reuters(validation=validation)
+    elif dataset_name == 'synthetic': 
+        return load_synthetic(validation)
+    elif dataset_name == 'TSRN': 
+        return load_TSRN(validation)
     else:
         print('Dataset {} not available! Available datasets are mnist, fmnist, usps and reuters10k.'.format(dataset_name))
         exit(0)

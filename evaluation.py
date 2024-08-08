@@ -5,6 +5,8 @@ Performance evaluator
 """
 
 import csv
+import sys
+sys.path.append('C:\\Users\\Rodolfo\\Project1\\SOMperf')
 from somperf.metrics import *
 from somperf.utils.topology import rectangular_topology_dist
 import sklearn.metrics as skmetrics
@@ -183,7 +185,6 @@ class PerfLogger:
             metrics
         """
         results = {}
-
         # Basic info
         if 'iteration' in metrics:
             results['iteration'] = summary['iteration']
@@ -192,6 +193,7 @@ class PerfLogger:
 
         # Losses
         if 'L' in metrics:
+            
             results['L'] = summary['loss'][0]
         if 'Lr' in metrics:
             results['Lr'] = summary['loss'][1]
@@ -220,6 +222,7 @@ class PerfLogger:
         if 'combined_error_val' in metrics:
             if verbose:
                 print('Evaluating combined_error_val...')
+            
             results['combined_error_val'] = combined_error(dist_fun, som=summary['prototypes'],
                                                            d=summary['d_original_val'])
         if 'latent_combined_error_val' in metrics:

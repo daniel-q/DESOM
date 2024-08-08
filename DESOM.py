@@ -118,8 +118,10 @@ class DESOM:
         optimizer : str (default='adam')
             optimization algorithm
         """
+        print('gamma:')
+        print(gamma)
         self.model.compile(loss={'decoder_0': 'mse', 'SOM': som_loss},
-                           loss_weights=[1, gamma],
+                           loss_weights=[1.0, gamma],
                            optimizer=optimizer)
     
     def load_weights(self, weights_path):
@@ -388,8 +390,10 @@ class DESOM:
             print('Autoencoder was not pre-trained!')
 
         save_interval = X_train.shape[0] // batch_size * save_epochs  # save every save_epochs epochs
+        print('X.shape: ',X_train.shape[0])
+        print('divide: ',batch_size * save_epochs)
         print('Save interval:', save_interval)
-
+        print(y_train)
         # Initialize perf logging
         perflogger = PerfLogger(with_validation=(X_val is not None),
                                 with_labels=(y_train is not None),
@@ -398,11 +402,11 @@ class DESOM:
 
         # Initialize batch generator
         batch = self.batch_generator(X_train, y_train, X_val, y_val, batch_size)
-
+        
         # Training loop
         for ite in range(iterations):
             (X_batch, y_batch), (X_val_batch, y_val_batch) = next(batch)
-
+            
             # Train AE and SOM jointly
             if ite % update_interval == 0:
                 # Compute cluster assignments for batch
@@ -426,13 +430,16 @@ class DESOM:
                 w_batch = self.neighborhood_function(self.map_dist(y_pred), T, neighborhood)
                 if X_val is not None:
                     w_val_batch = self.neighborhood_function(self.map_dist(y_val_pred), T, neighborhood)
-
+                
+                
                 # Train on batch
                 loss = self.model.train_on_batch(X_batch, [X_batch, w_batch])
+                
 
             # Train only AE
             else:
                 loss = self.model.train_on_batch(X_batch, [X_batch, np.zeros((X_batch.shape[0], self.n_prototypes))])
+                
 
             # Evaluate and log monitored metrics
             if ite % eval_interval == 0:
@@ -447,6 +454,7 @@ class DESOM:
                     val_loss = self.model.test_on_batch(X_val_batch, [X_val_batch, w_val_batch])
                     d_original_val = np.square((np.expand_dims(X_val_batch.reshape(X_val_batch.shape[0], -1), axis=1)
                                                 - decoded_prototypes)).sum(axis=2)
+                    print(d_original_val)
 
                 batch_summary = {
                     'map_size': self.map_size,
@@ -469,7 +477,7 @@ class DESOM:
                     'y_val_true': y_val_batch,
                     'y_val_pred': y_val_pred if X_val is not None else None,
                 }
-
+                print('test: ',X_val)
                 perflogger.log(batch_summary, verbose=verbose)
 
             # Save intermediate model
